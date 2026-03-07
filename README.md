@@ -6,18 +6,18 @@ A minimal, high-performance multi-language code runner built by students for stu
 
 ## Features
 
-- **🎯 Multi-Language Support**: C++, Python, Java, JavaScript, HTML, React
-- **👀 Real-time Preview**: HTML and React components render instantly with fixed blank screen issues
-- **⚡ Lightning Fast**: Optimized for speed with zero setup time
-- **🔗 GitHub Integration**: Clone repositories directly into the editor
-- **📝 Version History**: Save and revert code snapshots
-- **🤖 AI Code Completions**: Intelligent suggestions for ALL languages powered by Google Gemini
-- **💾 Auto-Save**: Automatic saving to browser storage every 3 seconds
-- **⌨️ Keyboard Shortcuts**: Complete keyboard navigation support
-- **📱 Responsive Design**: Works flawlessly on desktop, tablet, and mobile
-- **🎨 Light/Dark Mode**: Toggle between themes on the fly
-- **📦 File Explorer**: Create, organize, and manage multiple files and folders
-- **✨ Error Handling**: Real-time error display with helpful messages
+- **Multi-Language Support**: C++, Python, Java, JavaScript, HTML, React
+- ** Real-time Preview**: HTML and React components render instantly with fixed blank screen issues
+- ** Lightning Fast**: Optimized for speed with zero setup time
+- ** GitHub Integration**: Clone repositories directly into the editor
+- ** Version History**: Save and revert code snapshots
+- ** AI Code Completions**: Intelligent suggestions for ALL languages powered by Google Gemini
+- ** Auto-Save**: Automatic saving to browser storage every 3 seconds
+- ** Keyboard Shortcuts**: Complete keyboard navigation support
+- ** Responsive Design**: Works flawlessly on desktop, tablet, and mobile
+- ** Light/Dark Mode**: Toggle between themes on the fly
+- ** File Explorer**: Create, organize, and manage multiple files and folders
+- ** Error Handling**: Real-time error display with helpful messages
 
 ## Quick Start
 
@@ -194,4 +194,5 @@ Some languages may not be available in the web sandbox (C++, Java). For local de
 ## License
 
 MIT
+
 
