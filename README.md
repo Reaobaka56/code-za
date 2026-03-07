@@ -1,4 +1,4 @@
-# scott_za
+# code-za
 
 A minimal, high-performance multi-language code runner built by students for students.
 
@@ -102,13 +102,7 @@ Supported repository types:
 
 ### Environment Variables
 
-```bash
-# Required for AI code completion
-GEMINI_API_KEY=your_gemini_api_key
 
-# Optional: GitHub integration
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
 
 # DevOps
 NODE_ENV=production  # or development
@@ -143,11 +137,7 @@ docker-compose up --build
 
 The application will be available at `http://localhost:3000`
 
-Environment variables (set in `.env`):
-- `GEMINI_API_KEY` - Google Gemini API key
-- `GITHUB_CLIENT_ID` - GitHub OAuth client ID
-- `GITHUB_CLIENT_SECRET` - GitHub OAuth client secret
-- `APP_URL` - Application URL (default: http://localhost:3000)
+
 
 ## Troubleshooting
 
@@ -189,12 +179,6 @@ Some languages may not be available in the web sandbox (C++, Java). For local de
 | ![TSX](https://img.shields.io/badge/TSX-4.21.0-3178C6?style=flat&logo=typescript&logoColor=white) | Tool | TypeScript executor |
 | ![SQLite](https://img.shields.io/badge/SQLite-12.4.1-003B57?style=flat&logo=sqlite&logoColor=white) | Database | Data storage |
 
-### External Services & APIs
-| Service | Purpose |
-|---------|---------|
-| ![Google Cloud](https://img.shields.io/badge/Google%20Gemini-Latest-4285F4?style=flat&logo=google&logoColor=white) | AI code assistance |
-| ![Firebase](https://img.shields.io/badge/Firebase-12.9.0-FFCA28?style=flat&logo=firebase&logoColor=white) | Auth & Database |
-| ![GitHub](https://img.shields.io/badge/GitHub%20Octokit-5.0.5-181717?style=flat&logo=github&logoColor=white) | Repository integration |
 
 ### DevOps
 | Tool | Purpose |
@@ -210,3 +194,4 @@ Some languages may not be available in the web sandbox (C++, Java). For local de
 ## License
 
 MIT
+
