@@ -106,13 +106,7 @@ Supported repository types:
 
 # DevOps
 NODE_ENV=production  # or development
-```
 
-Get your `GEMINI_API_KEY` from [Google Generative AI](https://makersuite.google.com/app/apikey)
-
-```bash
-export GEMINI_API_KEY=your_api_key_here
-```
 
 Get your API key from [Google's Generative AI](https://makersuite.google.com/app/apikey)
 
@@ -194,5 +188,6 @@ Some languages may not be available in the web sandbox (C++, Java). For local de
 ## License
 
 MIT
+
 
 
