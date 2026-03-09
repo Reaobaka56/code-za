@@ -105,11 +105,6 @@ Supported repository types:
 
 
 # DevOps
-NODE_ENV=production  # or development
-
-
-Get your API key from [Google's Generative AI](https://makersuite.google.com/app/apikey)
-
 ### Keyboard Shortcuts
 
 | Shortcut | Action |
@@ -188,6 +183,7 @@ Some languages may not be available in the web sandbox (C++, Java). For local de
 ## License
 
 MIT
+
 
 
 
