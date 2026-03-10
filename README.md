@@ -101,6 +101,45 @@ Supported repository types:
 
 ### Environment Variables
 
+Create a `.env` file in the project root for backend settings.
+
+```bash
+# Code assistant provider: "ollama" (local LLM) or "mock" (template fallback)
+CODE_ASSISTANT_PROVIDER=ollama
+
+# Keep fallback templates enabled if the model is unavailable
+CODE_ASSISTANT_FALLBACK=true
+
+# Local Ollama configuration
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=qwen2.5-coder:1.5b
+
+# Optional tuning
+CODE_ASSISTANT_TIMEOUT_MS=12000
+CODE_ASSISTANT_MAX_SUGGESTIONS=3
+```
+
+### Local LLM Setup (Ollama)
+
+1. Install Ollama from `https://ollama.com`.
+2. Pull a small coding model:
+
+```bash
+ollama pull qwen2.5-coder:1.5b
+```
+
+3. Start Ollama (if not already running):
+
+```bash
+ollama serve
+```
+
+4. Start this app:
+
+```bash
+npm run dev
+```
+
 
 
 # DevOps
