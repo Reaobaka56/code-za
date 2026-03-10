@@ -937,7 +937,7 @@ export default function App() {
         setShowCompletions(false);
       }
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error || err.message || 'Failed to get suggestions. Check if GEMINI_API_KEY is set.';
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to get suggestions.';
       setCompletionError(errorMsg);
       console.error('Completion error:', err);
       setShowCompletions(false);
@@ -2015,7 +2015,7 @@ ${code}
                   {completionError ? (
                     <div className={`p-4 ${theme === 'dark' ? 'bg-red-500/10 text-red-400' : 'bg-red-500/10 text-red-600'}`}>
                       <p className="text-xs">{completionError}</p>
-                      <p className="text-[10px] mt-2 opacity-60">Make sure GEMINI_API_KEY is set in environment variables.</p>
+                      <p className="text-[10px] mt-2 opacity-60">Check backend completion service configuration.</p>
                     </div>
                   ) : (
                     <div className={`${theme === 'dark' ? 'divide-white/5' : 'divide-black/5'} divide-y max-h-64 overflow-auto`}>
