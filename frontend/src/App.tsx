@@ -291,29 +291,31 @@ const ThreeDBackground = ({ theme }: { theme: 'light' | 'dark' }) => (
 const LandingScreenshotBackdrop = ({ theme }: { theme: 'light' | 'dark' }) => (
   <div className="w-full max-w-4xl px-4 hidden md:block">
     <motion.div
-      className={`mx-auto w-full max-w-3xl rounded-[28px] border ${
+      className={`mx-auto w-full max-w-3xl rounded-[28px] border relative overflow-hidden ${
         theme === 'dark'
-          ? 'bg-[#0B1016]/80 border-white/15 shadow-[0_35px_80px_rgba(0,0,0,0.6)]'
-          : 'bg-[#FAF6EE]/85 border-black/10 shadow-[0_30px_70px_rgba(0,0,0,0.2)]'
-      } backdrop-blur-md`}
+          ? 'bg-[#0B1016]/70 border-white/20 shadow-[0_35px_80px_rgba(0,0,0,0.65)] liquid-glass liquid-glass-dark'
+          : 'bg-[#FAF6EE]/85 border-black/10 shadow-[0_30px_70px_rgba(0,0,0,0.2)] liquid-glass liquid-glass-light'
+      }`}
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, ease: [0.2, 1, 0.2, 1] }}
     >
-      <div className={`h-10 px-4 border-b ${theme === 'dark' ? 'border-white/10' : 'border-black/10'} flex items-center gap-2`}>
+      <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-[radial-gradient(circle_at_20%_-20%,rgba(146,110,255,0.24),transparent_55%),radial-gradient(circle_at_88%_15%,rgba(44,193,255,0.15),transparent_50%)]' : 'bg-[radial-gradient(circle_at_20%_-20%,rgba(146,110,255,0.2),transparent_55%),radial-gradient(circle_at_88%_15%,rgba(44,193,255,0.12),transparent_50%)]'} pointer-events-none`} />
+      <div className={`h-10 px-4 border-b ${theme === 'dark' ? 'border-white/10' : 'border-black/10'} flex items-center gap-2 relative`}>
         <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
         <span className="w-2.5 h-2.5 rounded-full bg-amber-400/80" />
         <span className="w-2.5 h-2.5 rounded-full bg-emerald-400/80" />
         <span className={`ml-3 text-[10px] font-mono ${theme === 'dark' ? 'text-white/45' : 'text-black/45'}`}>ide-screenshot.png</span>
       </div>
-      <div className="p-6 space-y-4">
-        <div className={`h-28 rounded-2xl border ${theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-black/10 bg-black/5'} p-4`}>
-          <div className="grid grid-cols-2 gap-3 h-full">
+      <div className="p-6 space-y-4 relative">
+        <div className={`h-28 rounded-2xl border ${theme === 'dark' ? 'border-white/10 bg-black/30' : 'border-black/10 bg-black/5'} p-4`}>
+          <div className="grid grid-cols-3 gap-3 h-full">
             <div className={`rounded-xl ${theme === 'dark' ? 'bg-white/5' : 'bg-black/5'}`} />
-            <div className={`rounded-xl ${theme === 'dark' ? 'bg-indigo-400/15' : 'bg-indigo-500/15'}`} />
+            <div className={`rounded-xl ${theme === 'dark' ? 'bg-indigo-400/20' : 'bg-indigo-500/15'}`} />
+            <div className={`rounded-xl ${theme === 'dark' ? 'bg-cyan-300/20' : 'bg-cyan-500/15'}`} />
           </div>
         </div>
-        <div className={`rounded-2xl border ${theme === 'dark' ? 'border-white/10 bg-[#05090F]' : 'border-black/10 bg-white/80'} p-4 font-mono text-[11px] space-y-2`}>
+        <div className={`rounded-2xl border ${theme === 'dark' ? 'border-white/10 bg-[#05090F]/85' : 'border-black/10 bg-white/80'} p-4 font-mono text-[11px] space-y-2`}>
           <p className={theme === 'dark' ? 'text-emerald-300/70' : 'text-emerald-700/70'}>{`const sdk = language("javascript");`}</p>
           <p className={theme === 'dark' ? 'text-sky-300/70' : 'text-sky-700/70'}>{`sdk.run("Hello, code-za");`}</p>
           <p className={theme === 'dark' ? 'text-fuchsia-300/70' : 'text-fuchsia-700/70'}>{`// preview updates in real-time`}</p>
@@ -1587,10 +1589,9 @@ ${code}
       <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#050505] text-[#EDEDED]' : 'bg-[#F2F1ED] text-[#1A1A1A]'} font-sans selection:bg-white/20 flex flex-col relative overflow-hidden transition-colors duration-500`}>
         <ThreeDBackground theme={theme} />
         {/* Background Glows */}
-        <div className={`absolute top-[-10%] left-[-10%] w-[60%] h-[60%] ${theme === 'dark' ? 'bg-white/[0.02]' : 'bg-black/[0.02]'} blur-[120px] rounded-full pointer-events-none`} />
-        <div className={`absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] ${theme === 'dark' ? 'bg-white/[0.02]' : 'bg-black/[0.02]'} blur-[120px] rounded-full pointer-events-none`} />
+        <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-[radial-gradient(circle_at_50%_-18%,rgba(128,82,255,0.5),transparent_48%),radial-gradient(circle_at_80%_10%,rgba(52,199,255,0.2),transparent_40%),radial-gradient(circle_at_20%_80%,rgba(130,87,255,0.18),transparent_46%)]' : 'bg-[radial-gradient(circle_at_50%_-18%,rgba(128,82,255,0.22),transparent_48%),radial-gradient(circle_at_80%_10%,rgba(52,199,255,0.12),transparent_40%),radial-gradient(circle_at_20%_80%,rgba(130,87,255,0.1),transparent_46%)]'} pointer-events-none`} />
 
-        <nav className={`h-20 flex items-center justify-between px-6 md:px-12 border-b ${theme === 'dark' ? 'border-white/10 bg-black/20' : 'border-black/10 bg-[#FAF9F6]/20'} backdrop-blur-md sticky top-0 z-50`}>
+        <nav className={`h-20 flex items-center justify-between px-6 md:px-12 border-b ${theme === 'dark' ? 'border-white/10 bg-black/20 liquid-glass liquid-glass-dark' : 'border-black/10 bg-[#FAF9F6]/20 liquid-glass liquid-glass-light'} backdrop-blur-md sticky top-0 z-50`}>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Logo theme={theme} className="w-8 h-8" />
@@ -1650,15 +1651,15 @@ ${code}
               className="max-w-6xl w-full space-y-16 text-center"
             >
               <div className="space-y-8">
-                <div className={`inline-flex items-center gap-3 px-4 py-2 rounded-full ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'} border backdrop-blur-md`}>
+                <div className={`inline-flex items-center gap-3 px-4 py-2 rounded-full ${theme === 'dark' ? 'bg-white/5 border-white/10 liquid-glass liquid-glass-dark' : 'bg-black/5 border-black/10 liquid-glass liquid-glass-light'} border backdrop-blur-md`}>
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                   <span className={`text-[10px] uppercase tracking-[0.2em] font-bold ${theme === 'dark' ? 'text-white/60' : 'text-black/60'}`}>Built by students for the next generation</span>
                 </div>
-                <h1 className={`text-[14vw] md:text-[10vw] font-bold tracking-tighter leading-[0.85] ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
-                  CODE <br/> <span className={`${theme === 'dark' ? 'text-white/20' : 'text-black/20'} italic font-serif font-light`}>WITHOUT</span> <br/> FRICTION.
+                <h1 className={`text-[14vw] md:text-[10vw] tracking-tighter leading-[0.86] ${theme === 'dark' ? 'text-white' : 'text-black'}`} style={{ fontFamily: "'EB Garamond', serif", fontWeight: 600 }}>
+                  CODE <br/> <span className={`${theme === 'dark' ? 'text-white/25' : 'text-black/25'} italic`}>WITHOUT</span> <br/> FRICTION.
                 </h1>
-                <p className={`text-lg md:text-2xl ${theme === 'dark' ? 'text-white/40' : 'text-black/40'} max-w-2xl mx-auto font-medium leading-relaxed`}>
-                  A high-performance, minimal playground crafted for developers who value speed and precision.
+                <p className={`text-lg md:text-[20px] ${theme === 'dark' ? 'text-white/70' : 'text-black/65'} max-w-2xl mx-auto font-medium leading-relaxed`}>
+                  Live coding workspace with real-time output, online runtimes, and polished liquid glass UI.
                 </p>
               </div>
 
@@ -1666,7 +1667,7 @@ ${code}
                 <button
                   onClick={handleExplore}
                   disabled={isExploring}
-                  className={`group relative ${theme === 'dark' ? 'bg-white/10 border-white/20 text-white' : 'bg-black/5 border-black/10 text-black'} border backdrop-blur-xl px-16 py-6 rounded-full text-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center gap-4 shadow-2xl overflow-hidden min-w-[320px] justify-center`}
+                  className={`group relative ${theme === 'dark' ? 'text-white hero-cta' : 'bg-black/5 border-black/10 text-black'} border backdrop-blur-xl px-16 py-6 rounded-[12px] text-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center gap-4 shadow-2xl overflow-hidden min-w-[320px] justify-center`}
                 >
                   {isExploring ? (
                     <CircularLoader size={24} theme={theme} />
@@ -1681,21 +1682,21 @@ ${code}
                 <LandingScreenshotBackdrop theme={theme} />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 w-full max-w-4xl pt-20">
-                  <div className={`space-y-4 text-left p-8 rounded-3xl ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-black/[0.02] border-black/5'} border backdrop-blur-sm`}>
+                  <div className={`space-y-4 text-left p-8 rounded-3xl ${theme === 'dark' ? 'bg-white/[0.02] border-white/10 liquid-glass liquid-glass-dark' : 'bg-black/[0.02] border-black/5 liquid-glass liquid-glass-light'} border backdrop-blur-sm`}>
                     <div className={`w-10 h-10 rounded-xl ${theme === 'dark' ? 'bg-white/5 text-white/40' : 'bg-black/5 text-black/40'} flex items-center justify-center`}>
                       <Zap className="w-5 h-5" />
                     </div>
                     <h3 className="text-sm font-bold uppercase tracking-widest">Instant</h3>
                     <p className={`text-sm ${theme === 'dark' ? 'text-white/30' : 'text-black/30'} leading-relaxed`}>Zero setup. Zero lag. Just pure execution in a high-performance Linux sandbox.</p>
                   </div>
-                  <div className={`space-y-4 text-left p-8 rounded-3xl ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-black/[0.02] border-black/5'} border backdrop-blur-sm`}>
+                  <div className={`space-y-4 text-left p-8 rounded-3xl ${theme === 'dark' ? 'bg-white/[0.02] border-white/10 liquid-glass liquid-glass-dark' : 'bg-black/[0.02] border-black/5 liquid-glass liquid-glass-light'} border backdrop-blur-sm`}>
                     <div className={`w-10 h-10 rounded-xl ${theme === 'dark' ? 'bg-white/5 text-white/40' : 'bg-black/5 text-black/40'} flex items-center justify-center`}>
                       <Shield className="w-5 h-5" />
                     </div>
                     <h3 className="text-sm font-bold uppercase tracking-widest">Secure</h3>
                     <p className={`text-sm ${theme === 'dark' ? 'text-white/30' : 'text-black/30'} leading-relaxed`}>Isolated ephemeral environments that vanish the moment you're done. Your code, your privacy.</p>
                   </div>
-                  <div className={`space-y-4 text-left p-8 rounded-3xl ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-black/[0.02] border-black/5'} border backdrop-blur-sm`}>
+                  <div className={`space-y-4 text-left p-8 rounded-3xl ${theme === 'dark' ? 'bg-white/[0.02] border-white/10 liquid-glass liquid-glass-dark' : 'bg-black/[0.02] border-black/5 liquid-glass liquid-glass-light'} border backdrop-blur-sm`}>
                     <div className={`w-10 h-10 rounded-xl ${theme === 'dark' ? 'bg-white/5 text-white/40' : 'bg-black/5 text-black/40'} flex items-center justify-center`}>
                       <Code className="w-5 h-5" />
                     </div>
@@ -1753,13 +1754,13 @@ ${code}
         <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
           <button
             onClick={() => showComingSoon("Windows")}
-            className={`px-4 py-2 rounded-full border text-xs font-bold tracking-wide ${theme === 'dark' ? 'bg-black/60 border-white/15 text-white/80 hover:text-white' : 'bg-white/80 border-black/15 text-black/80 hover:text-black'} backdrop-blur-md transition-colors`}
+            className={`px-4 py-2 rounded-full border text-xs font-bold tracking-wide ${theme === 'dark' ? 'bg-black/60 border-white/15 text-white/80 hover:text-white liquid-glass liquid-glass-dark' : 'bg-white/80 border-black/15 text-black/80 hover:text-black liquid-glass liquid-glass-light'} backdrop-blur-md transition-colors`}
           >
             Windows SDK
           </button>
           <button
             onClick={() => showComingSoon("macOS")}
-            className={`px-4 py-2 rounded-full border text-xs font-bold tracking-wide ${theme === 'dark' ? 'bg-black/60 border-white/15 text-white/80 hover:text-white' : 'bg-white/80 border-black/15 text-black/80 hover:text-black'} backdrop-blur-md transition-colors`}
+            className={`px-4 py-2 rounded-full border text-xs font-bold tracking-wide ${theme === 'dark' ? 'bg-black/60 border-white/15 text-white/80 hover:text-white liquid-glass liquid-glass-dark' : 'bg-white/80 border-black/15 text-black/80 hover:text-black liquid-glass liquid-glass-light'} backdrop-blur-md transition-colors`}
           >
             macOS SDK
           </button>
