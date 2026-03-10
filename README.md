@@ -68,6 +68,18 @@ code-za includes intelligent AI-powered code completion for **ALL supported lang
    - Escape to close panel
    - Click any suggestion to insert it
 
+### Chat Mode + File Upload
+
+The side `code-za AI` badge now supports:
+
+1. `Auto Predict` mode for inline code suggestions
+2. `Chat Mode` for asking questions about your code
+3. File upload in chat mode (files are sent as text context to the backend AI endpoint)
+
+Limits:
+- Up to 8 files per chat session
+- Large files are truncated before sending
+
 ### Keyboard Shortcuts
 
 | Shortcut | Action |

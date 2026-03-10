@@ -9,6 +9,28 @@ export interface CompletionResponse {
   suggestions: string[];
 }
 
+export interface ChatFileContext {
+  name: string;
+  content: string;
+}
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ChatRequest {
+  message: string;
+  language: string;
+  code: string;
+  files?: ChatFileContext[];
+  history?: ChatMessage[];
+}
+
+export interface ChatResponse {
+  reply: string;
+}
+
 type Provider = "ollama" | "mock";
 
 const provider = ((process.env.CODE_ASSISTANT_PROVIDER || "ollama").toLowerCase() as Provider);
@@ -194,6 +216,76 @@ const callOllamaForExplanation = async (code: string, language: string): Promise
   return String(response.data?.response || "").trim();
 };
 
+const callOllamaForChat = async ({
+  message,
+  language,
+  code,
+  files = [],
+  history = [],
+}: ChatRequest): Promise<string> => {
+  const normalizedLanguage = normalizeLanguage(language);
+  const trimmedFiles = files
+    .filter((f) => f?.name && typeof f?.content === "string")
+    .slice(0, 8)
+    .map((f) => ({
+      name: f.name,
+      content: f.content.slice(0, 12000),
+    }));
+
+  const trimmedHistory = history
+    .filter((h) => h?.role && h?.content)
+    .slice(-8)
+    .map((h) => `${h.role.toUpperCase()}: ${h.content.slice(0, 2000)}`)
+    .join("\n\n");
+
+  const fileContext = trimmedFiles.length
+    ? trimmedFiles
+        .map((file, idx) => `FILE ${idx + 1}: ${file.name}\n${file.content}`)
+        .join("\n\n-----\n\n")
+    : "No uploaded files.";
+
+  const prompt = [
+    "You are code-za AI, a pragmatic coding assistant.",
+    "Answer with concrete code-first guidance and keep responses concise.",
+    "If asked to modify code, provide exact snippet.",
+    `Language context: ${normalizedLanguage}`,
+    "",
+    "Current editor code:",
+    code.slice(-12000),
+    "",
+    "Uploaded files context:",
+    fileContext,
+    "",
+    trimmedHistory ? `Recent chat:\n${trimmedHistory}\n` : "",
+    `User message:\n${message}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const response = await axios.post(
+    `${ollamaBaseUrl}/api/generate`,
+    {
+      model: ollamaModel,
+      prompt,
+      stream: false,
+      options: {
+        temperature: 0.35,
+        num_predict: 420,
+      },
+    },
+    {
+      timeout: completionTimeoutMs,
+      proxy: false,
+    }
+  );
+
+  const reply = String(response.data?.response || "").trim();
+  if (!reply) {
+    throw new Error("Model returned an empty chat response.");
+  }
+  return reply;
+};
+
 export const getCodeCompletions = async ({ code, language }: CompletionRequest): Promise<CompletionResponse> => {
   if (provider === "mock") {
     return { suggestions: rankTemplateFallback(code, language) };
@@ -232,5 +324,31 @@ export const explainCode = async (code: string, language: string): Promise<strin
     const lineCount = code.split("\n").length;
     const languageLabel = language.charAt(0).toUpperCase() + language.slice(1);
     return `${languageLabel} snippet with ${lineCount} line(s). LLM unavailable, using fallback explainer.`;
+  }
+};
+
+export const chatWithAssistant = async (request: ChatRequest): Promise<ChatResponse> => {
+  if (provider === "mock") {
+    return {
+      reply:
+        "Mock mode is active. Switch CODE_ASSISTANT_PROVIDER=ollama to enable live chat responses.",
+    };
+  }
+
+  try {
+    const reply = await callOllamaForChat(request);
+    return { reply };
+  } catch (error: any) {
+    if (!fallbackEnabled) {
+      throw new Error(
+        `LLM chat failed (${error?.message || "unknown error"}). ` +
+          `Check Ollama at ${ollamaBaseUrl} with model '${ollamaModel}'.`
+      );
+    }
+
+    return {
+      reply:
+        "I could not reach the LLM right now. Check Ollama and retry. I can still use auto-predict completions as fallback.",
+    };
   }
 };

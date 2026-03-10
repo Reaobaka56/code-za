@@ -50,7 +50,10 @@ import {
   Folder,
   Trash2,
   AlertTriangle,
-  Github
+  Github,
+  MessageSquare,
+  Send,
+  Paperclip
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import axios from "axios";
@@ -73,6 +76,16 @@ interface FileNode {
   parentId: string | null;
   content?: string;
   language?: Language;
+}
+
+interface ChatUploadFile {
+  name: string;
+  content: string;
+}
+
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
 }
 
 const DEFAULT_CODE: Record<Language, string> = {
@@ -490,6 +503,12 @@ export default function App() {
   const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
   const [showCodeZaAssistPrompt, setShowCodeZaAssistPrompt] = useState(false);
   const [assistHint, setAssistHint] = useState("Need a boost?");
+  const [assistMode, setAssistMode] = useState<"predict" | "chat">("predict");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [isChatSending, setIsChatSending] = useState(false);
+  const [chatError, setChatError] = useState("");
+  const [chatFiles, setChatFiles] = useState<ChatUploadFile[]>([]);
   const [lastSaved, setLastSaved] = useState<number>(Date.now());
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const [comingSoonMessage, setComingSoonMessage] = useState<string>("");
@@ -501,6 +520,7 @@ export default function App() {
   const assistPromptTimeoutRef = useRef<NodeJS.Timeout>();
   const lastCodeEditAtRef = useRef<number>(Date.now());
   const lastAssistPromptAtRef = useRef<number>(0);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const handleExplore = () => {
     setIsExploring(true);
@@ -778,7 +798,9 @@ export default function App() {
       clearTimeout(assistPromptTimeoutRef.current);
     }
     assistPromptTimeoutRef.current = setTimeout(() => {
-      setShowCodeZaAssistPrompt(false);
+      if (assistMode === "predict") {
+        setShowCodeZaAssistPrompt(false);
+      }
     }, 5000);
   };
 
@@ -792,14 +814,78 @@ export default function App() {
     }
 
     setShowCodeZaAssistPrompt(true);
-    scheduleAssistPromptHide();
+    if (reason !== "manual") {
+      scheduleAssistPromptHide();
+    }
 
-    if (code && code.trim().length >= 3 && activeTab !== "terminal" && !isLoadingCompletions) {
+    if (assistMode === "predict" && code && code.trim().length >= 3 && activeTab !== "terminal" && !isLoadingCompletions) {
       fetchCompletions(code);
     }
 
     lastAssistPromptAtRef.current = Date.now();
   };
+
+  const handleChatFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const inputFiles = event.target.files;
+    if (!inputFiles || inputFiles.length === 0) return;
+    const selected: File[] = Array.from(inputFiles);
+
+    const nextFiles: ChatUploadFile[] = [];
+    for (const file of selected.slice(0, 8)) {
+      try {
+        const text = await file.text();
+        nextFiles.push({
+          name: file.name,
+          content: text.slice(0, 12000),
+        });
+      } catch {
+        // Ignore unreadable file and continue.
+      }
+    }
+
+    setChatFiles((prev) => [...prev, ...nextFiles].slice(0, 8));
+    event.target.value = "";
+  };
+
+  const removeChatFile = (name: string) => {
+    setChatFiles((prev) => prev.filter((file) => file.name !== name));
+  };
+
+  const sendChatMessage = async () => {
+    const message = chatInput.trim();
+    if (!message || isChatSending) return;
+
+    const outgoing: ChatMessage = { role: "user", content: message };
+    const nextHistory = [...chatMessages, outgoing];
+    setChatMessages(nextHistory);
+    setChatInput("");
+    setChatError("");
+    setIsChatSending(true);
+    setShowCodeZaAssistPrompt(true);
+
+    try {
+      const response = await axios.post("/api/completion/chat", {
+        message,
+        language,
+        code,
+        files: chatFiles,
+        history: chatMessages.slice(-8),
+      });
+
+      const reply = response.data?.reply || "No response from assistant.";
+      setChatMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+    } catch (err: any) {
+      setChatError(err.response?.data?.error || "Failed to send chat message.");
+    } finally {
+      setIsChatSending(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showCodeZaAssistPrompt && assistMode === "chat") {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatMessages, showCodeZaAssistPrompt, assistMode]);
 
   useEffect(() => {
     if (view !== "playground") return;
@@ -2571,23 +2657,64 @@ ${code}
             initial={{ opacity: 0, x: 24, scale: 0.96 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 24, scale: 0.96 }}
-            className={`fixed right-20 top-1/2 -translate-y-1/2 z-30 max-w-[260px] rounded-2xl border p-4 shadow-2xl backdrop-blur-xl liquid-glass ${
+            className={`fixed right-20 top-1/2 -translate-y-1/2 z-30 w-[min(92vw,430px)] rounded-2xl border p-4 shadow-2xl backdrop-blur-xl liquid-glass ${
               theme === 'dark'
                 ? 'liquid-glass-dark text-white'
                 : 'liquid-glass-light text-black'
             }`}
           >
-            <div className="flex items-start gap-3">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
-                theme === 'dark' ? 'bg-white/10 border-white/20' : 'bg-black/5 border-black/15'
-              }`}>
-                <img src="/favicon.svg" alt="code-za" className="w-5 h-5" />
+            <div className="space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
+                    theme === 'dark' ? 'bg-white/10 border-white/20' : 'bg-black/5 border-black/15'
+                  }`}>
+                    <img src="/favicon.svg" alt="code-za" className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[11px] font-bold uppercase tracking-widest">code-za assistant</p>
+                    <p className={`${theme === 'dark' ? 'text-white/70' : 'text-black/70'} text-xs leading-relaxed`}>
+                      {assistMode === "predict" ? assistHint : "Chat with AI and upload files for context."}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCodeZaAssistPrompt(false)}
+                  className={`p-1.5 rounded-lg ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-black/10'} transition-colors`}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
-              <div className="space-y-2">
-                <p className="text-[11px] font-bold uppercase tracking-widest">code-za assistant</p>
-                <p className={`${theme === 'dark' ? 'text-white/70' : 'text-black/70'} text-xs leading-relaxed`}>
-                  {assistHint}
-                </p>
+
+              <div className={`flex items-center gap-2 p-1 rounded-xl border ${theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-black/10 bg-black/5'}`}>
+                <button
+                  onClick={() => setAssistMode("predict")}
+                  className={`flex-1 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                    assistMode === "predict"
+                      ? "bg-indigo-500 text-white"
+                      : theme === "dark"
+                        ? "text-white/60 hover:text-white"
+                        : "text-black/60 hover:text-black"
+                  }`}
+                >
+                  Auto Predict
+                </button>
+                <button
+                  onClick={() => setAssistMode("chat")}
+                  className={`flex-1 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 ${
+                    assistMode === "chat"
+                      ? "bg-indigo-500 text-white"
+                      : theme === "dark"
+                        ? "text-white/60 hover:text-white"
+                        : "text-black/60 hover:text-black"
+                  }`}
+                >
+                  <MessageSquare className="w-3 h-3" />
+                  Chat Mode
+                </button>
+              </div>
+
+              {assistMode === "predict" && (
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => summonCodeZaAssistant("manual")}
@@ -2604,7 +2731,69 @@ ${code}
                     Hide
                   </button>
                 </div>
-              </div>
+              )}
+
+              {assistMode === "chat" && (
+                <div className="space-y-3">
+                  <div className={`max-h-52 overflow-auto rounded-xl border p-3 space-y-2 ${theme === 'dark' ? 'border-white/10 bg-black/30' : 'border-black/10 bg-white/60'}`}>
+                    {chatMessages.length === 0 && (
+                      <p className={`text-xs ${theme === 'dark' ? 'text-white/50' : 'text-black/50'}`}>
+                        Ask anything about your code, architecture, bugs, or refactors.
+                      </p>
+                    )}
+                    {chatMessages.map((msg, idx) => (
+                      <div key={idx} className={`text-xs leading-relaxed p-2 rounded-lg ${msg.role === "assistant" ? (theme === "dark" ? "bg-white/5" : "bg-black/5") : "bg-indigo-500/20"}`}>
+                        <span className="font-bold uppercase tracking-widest text-[9px] mr-2">
+                          {msg.role === "assistant" ? "AI" : "You"}
+                        </span>
+                        <span className="whitespace-pre-wrap">{msg.content}</span>
+                      </div>
+                    ))}
+                    <div ref={chatEndRef} />
+                  </div>
+
+                  {chatFiles.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {chatFiles.map((file) => (
+                        <div key={file.name} className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] border ${theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-black/10 bg-black/5'}`}>
+                          <Paperclip className="w-3 h-3" />
+                          <span className="max-w-[160px] truncate">{file.name}</span>
+                          <button onClick={() => removeChatFile(file.name)} className="opacity-70 hover:opacity-100">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <label className={`cursor-pointer px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest border ${theme === 'dark' ? 'border-white/15 bg-white/5 text-white/70' : 'border-black/15 bg-black/5 text-black/70'}`}>
+                      <input type="file" multiple className="hidden" onChange={handleChatFileUpload} />
+                      Upload Files
+                    </label>
+                    <input
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          sendChatMessage();
+                        }
+                      }}
+                      placeholder="Ask code-za AI..."
+                      className={`flex-1 px-3 py-2 rounded-lg text-xs border outline-none ${theme === 'dark' ? 'border-white/15 bg-white/5 text-white placeholder:text-white/40' : 'border-black/15 bg-black/5 text-black placeholder:text-black/40'}`}
+                    />
+                    <button
+                      onClick={sendChatMessage}
+                      disabled={isChatSending || !chatInput.trim()}
+                      className="px-3 py-2 rounded-lg bg-indigo-500 text-white disabled:opacity-50"
+                    >
+                      {isChatSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                  {chatError && <p className="text-[11px] text-red-500">{chatError}</p>}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
