@@ -54,8 +54,12 @@ export const getCodeCompletions = async ({ code, language }: CompletionRequest):
     const aStartsWithLastLine = lastLine.length > 0 && a.toLowerCase().startsWith(lastLine.toLowerCase());
     const bStartsWithLastLine = lastLine.length > 0 && b.toLowerCase().startsWith(lastLine.toLowerCase());
 
-    if (aStartsWithLastLine && !bStartsWithLastLine) return -1;
-    if (!aStartsWithLastLine && bStartsWithLastLine) return 1;
+    if (aStartsWithLastLine && !bStartsWithLastLine) {
+      return -1;
+    }
+    if (!aStartsWithLastLine && bStartsWithLastLine) {
+      return 1;
+    }
     return 0;
   });
 
@@ -66,5 +70,5 @@ export const explainCode = async (code: string, language: string): Promise<strin
   const lineCount = code.split("\n").length;
   const languageLabel = language.charAt(0).toUpperCase() + language.slice(1);
 
-  return `${languageLabel} snippet with ${lineCount} line(s). This environment is using a lightweight local explainer.`;
+  return `${languageLabel} snippet with ${lineCount} line(s). This environment is currently using a lightweight local explainer.`;
 };
