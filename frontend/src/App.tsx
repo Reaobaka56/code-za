@@ -1659,7 +1659,7 @@ ${code}
                   CODE <br/> <span className={`${theme === 'dark' ? 'text-white/25' : 'text-black/25'} italic`}>WITHOUT</span> <br/> FRICTION.
                 </h1>
                 <p className={`text-lg md:text-[20px] ${theme === 'dark' ? 'text-white/70' : 'text-black/65'} max-w-2xl mx-auto font-medium leading-relaxed`}>
-                  Live coding workspace with real-time output, online runtimes, and polished liquid glass UI.
+                  Live coding workspace with real-time output, online runtimes.
                 </p>
               </div>
 
