@@ -1,4 +1,5 @@
 import { exec } from "child_process";
+import axios from "axios";
 import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
@@ -9,7 +10,104 @@ export interface ExecutionResult {
   duration: number;
 }
 
-export const runCode = async (language: string, code: string): Promise<ExecutionResult> => {
+type PistonRuntime = {
+  language: string;
+  version: string;
+  aliases?: string[];
+};
+
+const PISTON_BASE_URL = (process.env.PISTON_BASE_URL || "https://emkc.org/api/v2/piston").replace(/\/+$/, "");
+const onlineLanguages = new Set(["python", "cpp", "java"]);
+const runtimeCache = new Map<string, { language: string; version: string }>();
+
+const runtimeHints: Record<string, string[]> = {
+  python: ["python", "py"],
+  cpp: ["c++", "cpp"],
+  java: ["java"],
+};
+
+const getSourceFileName = (language: string, code: string): string => {
+  switch (language) {
+    case "python":
+      return "main.py";
+    case "cpp":
+      return "main.cpp";
+    case "java": {
+      const classMatch = code.match(/public\s+class\s+(\w+)/);
+      const className = classMatch ? classMatch[1] : "Main";
+      return `${className}.java`;
+    }
+    case "javascript":
+      return "solution.js";
+    default:
+      return "main.txt";
+  }
+};
+
+const resolveRuntime = async (language: string): Promise<{ language: string; version: string }> => {
+  const cached = runtimeCache.get(language);
+  if (cached) return cached;
+
+  const wanted = runtimeHints[language];
+  if (!wanted) {
+    throw new Error(`Unsupported language for online execution: ${language}`);
+  }
+
+  const { data } = await axios.get<PistonRuntime[]>(`${PISTON_BASE_URL}/runtimes`, {
+    timeout: 10000,
+    proxy: false,
+  });
+
+  for (const name of wanted) {
+    const runtime = data.find((entry) => entry.language === name || entry.aliases?.includes(name));
+    if (runtime) {
+      const selected = { language: runtime.language, version: runtime.version };
+      runtimeCache.set(language, selected);
+      return selected;
+    }
+  }
+
+  throw new Error(`No runtime found for ${language}`);
+};
+
+const runCodeOnline = async (language: string, code: string): Promise<ExecutionResult> => {
+  const runtime = await resolveRuntime(language);
+  const startedAt = Date.now();
+
+  const { data } = await axios.post(
+    `${PISTON_BASE_URL}/execute`,
+    {
+      language: runtime.language,
+      version: runtime.version,
+      files: [{ name: getSourceFileName(language, code), content: code }],
+      compile_timeout: 12000,
+      run_timeout: 7000,
+    },
+    {
+      timeout: 20000,
+      proxy: false,
+    }
+  );
+
+  const compileOut = data?.compile?.stdout ?? "";
+  const runOut = data?.run?.stdout ?? "";
+  const compileErr = data?.compile?.stderr ?? "";
+  const runErr = data?.run?.stderr ?? "";
+  const exitCode = data?.run?.code;
+
+  let error = [compileErr, runErr].filter(Boolean).join("\n");
+  if (!error && typeof exitCode === "number" && exitCode !== 0) {
+    error = `Process exited with code ${exitCode}.`;
+  }
+
+  return {
+    output: `${compileOut}${runOut}`,
+    error,
+    duration: Date.now() - startedAt,
+  };
+};
+
+const runCodeLocally = async (language: string, code: string): Promise<ExecutionResult> => {
   const requestId = uuidv4();
   const tempDir = path.join(process.cwd(), "temp", requestId);
 
@@ -67,8 +165,8 @@ export const runCode = async (language: string, code: string): Promise<Execution
 
         try {
           fs.rmSync(tempDir, { recursive: true, force: true });
-        } catch (e) {
-          console.error("Cleanup error:", e);
+        } catch (cleanupError) {
+          console.error("Cleanup error:", cleanupError);
         }
 
         if (error) {
@@ -99,6 +197,22 @@ export const runCode = async (language: string, code: string): Promise<Execution
       }
     );
   });
+};
+
+export const runCode = async (language: string, code: string): Promise<ExecutionResult> => {
+  if (onlineLanguages.has(language)) {
+    try {
+      return await runCodeOnline(language, code);
+    } catch (error: any) {
+      return {
+        output: "",
+        error: `Online ${language.toUpperCase()} runtime is currently unavailable. ${error?.message ?? ""}`.trim(),
+        duration: 0,
+      };
+    }
+  }
+
+  return runCodeLocally(language, code);
 };
 
 export const runTerminal = async (command: string): Promise<{ output: string; error: string }> => {

@@ -289,15 +289,15 @@ const ThreeDBackground = ({ theme }: { theme: 'light' | 'dark' }) => (
 );
 
 const LandingScreenshotBackdrop = ({ theme }: { theme: 'light' | 'dark' }) => (
-  <div className="pointer-events-none absolute inset-0 hidden lg:block overflow-hidden">
+  <div className="w-full max-w-4xl px-4 hidden md:block">
     <motion.div
-      className={`absolute top-[14%] right-[8%] w-[520px] rounded-[28px] border ${
+      className={`mx-auto w-full max-w-3xl rounded-[28px] border ${
         theme === 'dark'
           ? 'bg-[#0B1016]/80 border-white/15 shadow-[0_35px_80px_rgba(0,0,0,0.6)]'
           : 'bg-[#FAF6EE]/85 border-black/10 shadow-[0_30px_70px_rgba(0,0,0,0.2)]'
       } backdrop-blur-md`}
-      initial={{ opacity: 0, y: 24, rotate: -5 }}
-      animate={{ opacity: 1, y: 0, rotate: -3 }}
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, ease: [0.2, 1, 0.2, 1] }}
     >
       <div className={`h-10 px-4 border-b ${theme === 'dark' ? 'border-white/10' : 'border-black/10'} flex items-center gap-2`}>
@@ -1586,7 +1586,6 @@ ${code}
     return (
       <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#050505] text-[#EDEDED]' : 'bg-[#F2F1ED] text-[#1A1A1A]'} font-sans selection:bg-white/20 flex flex-col relative overflow-hidden transition-colors duration-500`}>
         <ThreeDBackground theme={theme} />
-        <LandingScreenshotBackdrop theme={theme} />
         {/* Background Glows */}
         <div className={`absolute top-[-10%] left-[-10%] w-[60%] h-[60%] ${theme === 'dark' ? 'bg-white/[0.02]' : 'bg-black/[0.02]'} blur-[120px] rounded-full pointer-events-none`} />
         <div className={`absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] ${theme === 'dark' ? 'bg-white/[0.02]' : 'bg-black/[0.02]'} blur-[120px] rounded-full pointer-events-none`} />
@@ -1678,6 +1677,8 @@ ${code}
                     </>
                   )}
                 </button>
+
+                <LandingScreenshotBackdrop theme={theme} />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 w-full max-w-4xl pt-20">
                   <div className={`space-y-4 text-left p-8 rounded-3xl ${theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-black/[0.02] border-black/5'} border backdrop-blur-sm`}>
@@ -1993,32 +1994,16 @@ ${code}
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className={`text-[10px] ${theme === 'dark' ? 'text-white/40' : 'text-black/40'}`}>Python 3</span>
+                    <span className={`text-[10px] ${theme === 'dark' ? 'text-white/40' : 'text-black/40'}`}>Python 3 (Online)</span>
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                   </div>
-                  <div className="flex items-center justify-between group">
-                    <span className={`text-[10px] ${theme === 'dark' ? 'text-white/40' : 'text-black/40'}`}>C++ (g++)</span>
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => setShowFixModal({ lang: 'C++', tool: 'g++' })}
-                        className={`opacity-0 group-hover:opacity-100 text-[8px] uppercase tracking-tighter font-bold px-1.5 py-0.5 rounded border ${theme === 'dark' ? 'border-white/10 text-white/40 hover:bg-white/5' : 'border-black/10 text-black/40 hover:bg-black/5'} transition-all`}
-                      >
-                        Fix
-                      </button>
-                      <div className="w-1.5 h-1.5 rounded-full bg-red-500/40" />
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[10px] ${theme === 'dark' ? 'text-white/40' : 'text-black/40'}`}>C++ (Online)</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                   </div>
-                  <div className="flex items-center justify-between group">
-                    <span className={`text-[10px] ${theme === 'dark' ? 'text-white/40' : 'text-black/40'}`}>Java (JDK)</span>
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => setShowFixModal({ lang: 'Java', tool: 'javac' })}
-                        className={`opacity-0 group-hover:opacity-100 text-[8px] uppercase tracking-tighter font-bold px-1.5 py-0.5 rounded border ${theme === 'dark' ? 'border-white/10 text-white/40 hover:bg-white/5' : 'border-black/10 text-black/40 hover:bg-black/5'} transition-all`}
-                      >
-                        Fix
-                      </button>
-                      <div className="w-1.5 h-1.5 rounded-full bg-red-500/40" />
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[10px] ${theme === 'dark' ? 'text-white/40' : 'text-black/40'}`}>Java (Online)</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                   </div>
                 </div>
               </div>
