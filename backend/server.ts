@@ -4,18 +4,27 @@ import cors from "cors";
 import path from "path";
 import authRoutes from "./routes/auth";
 import executionRoutes from "./routes/execution";
+import completionRoutes from "./routes/completion";
+import githubRoutes from "./routes/github";
+import healthRoutes from "./routes/health";
+import { globalRateLimit, requestMetadata } from "./middleware/apiHardening";
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
   app.use(cors());
-  app.use(express.json());
+  app.use(requestMetadata);
+  app.use(globalRateLimit);
+  app.use(express.json({ limit: "1mb" }));
 
   // API routes
   app.use("/api/auth", authRoutes);
   app.use("/api", executionRoutes);
-  
+  app.use("/api/completion", completionRoutes);
+  app.use("/api/github", githubRoutes);
+  app.use("/api", healthRoutes);
+
   // OAuth callback route (not under /api)
   app.use("/auth", authRoutes);
 
@@ -34,10 +43,10 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 
-startServer().catch(err => {
+startServer().catch((err) => {
   console.error("Failed to start server:", err);
 });
