@@ -4,6 +4,7 @@ import cors from "cors";
 import path from "path";
 import authRoutes from "./routes/auth";
 import executionRoutes from "./routes/execution";
+import completionRoutes from "./routes/completion";
 
 async function startServer() {
   const app = express();
@@ -15,6 +16,7 @@ async function startServer() {
   // API routes
   app.use("/api/auth", authRoutes);
   app.use("/api", executionRoutes);
+  app.use("/api/completion", completionRoutes);
   
   // OAuth callback route (not under /api)
   app.use("/auth", authRoutes);
@@ -34,7 +36,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(Server running on http://localhost:${PORT}`);
+    console.log("Server running on http://localhost:" + PORT);
   });
 }
 
