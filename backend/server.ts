@@ -5,6 +5,7 @@ import path from "path";
 import authRoutes from "./routes/auth";
 import executionRoutes from "./routes/execution";
 import completionRoutes from "./routes/completion";
+import githubRoutes from "./routes/github";
 
 async function startServer() {
   const app = express();
@@ -17,6 +18,7 @@ async function startServer() {
   app.use("/api/auth", authRoutes);
   app.use("/api", executionRoutes);
   app.use("/api/completion", completionRoutes);
+  app.use("/api/github", githubRoutes);
   
   // OAuth callback route (not under /api)
   app.use("/auth", authRoutes);
@@ -36,7 +38,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 

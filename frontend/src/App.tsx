@@ -29,6 +29,7 @@ import {
   X,
   Cookie,
   FileText,
+  Copy,
   Eye,
   Monitor,
   Command,
@@ -287,6 +288,42 @@ const ThreeDBackground = ({ theme }: { theme: 'light' | 'dark' }) => (
   </div>
 );
 
+const LandingScreenshotBackdrop = ({ theme }: { theme: 'light' | 'dark' }) => (
+  <div className="pointer-events-none absolute inset-0 hidden lg:block overflow-hidden">
+    <motion.div
+      className={`absolute top-[14%] right-[8%] w-[520px] rounded-[28px] border ${
+        theme === 'dark'
+          ? 'bg-[#0B1016]/80 border-white/15 shadow-[0_35px_80px_rgba(0,0,0,0.6)]'
+          : 'bg-[#FAF6EE]/85 border-black/10 shadow-[0_30px_70px_rgba(0,0,0,0.2)]'
+      } backdrop-blur-md`}
+      initial={{ opacity: 0, y: 24, rotate: -5 }}
+      animate={{ opacity: 1, y: 0, rotate: -3 }}
+      transition={{ duration: 0.9, ease: [0.2, 1, 0.2, 1] }}
+    >
+      <div className={`h-10 px-4 border-b ${theme === 'dark' ? 'border-white/10' : 'border-black/10'} flex items-center gap-2`}>
+        <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
+        <span className="w-2.5 h-2.5 rounded-full bg-amber-400/80" />
+        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400/80" />
+        <span className={`ml-3 text-[10px] font-mono ${theme === 'dark' ? 'text-white/45' : 'text-black/45'}`}>ide-screenshot.png</span>
+      </div>
+      <div className="p-6 space-y-4">
+        <div className={`h-28 rounded-2xl border ${theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-black/10 bg-black/5'} p-4`}>
+          <div className="grid grid-cols-2 gap-3 h-full">
+            <div className={`rounded-xl ${theme === 'dark' ? 'bg-white/5' : 'bg-black/5'}`} />
+            <div className={`rounded-xl ${theme === 'dark' ? 'bg-indigo-400/15' : 'bg-indigo-500/15'}`} />
+          </div>
+        </div>
+        <div className={`rounded-2xl border ${theme === 'dark' ? 'border-white/10 bg-[#05090F]' : 'border-black/10 bg-white/80'} p-4 font-mono text-[11px] space-y-2`}>
+          <p className={theme === 'dark' ? 'text-emerald-300/70' : 'text-emerald-700/70'}>{`const sdk = language("javascript");`}</p>
+          <p className={theme === 'dark' ? 'text-sky-300/70' : 'text-sky-700/70'}>{`sdk.run("Hello, code-za");`}</p>
+          <p className={theme === 'dark' ? 'text-fuchsia-300/70' : 'text-fuchsia-700/70'}>{`// preview updates in real-time`}</p>
+        </div>
+      </div>
+      <div className="absolute -top-4 left-12 w-24 h-8 rounded-b-2xl bg-gradient-to-b from-slate-300/80 to-slate-500/50 shadow-lg" />
+    </motion.div>
+  </div>
+);
+
 const TestingPhaseModal = ({ theme, onContinue, onIgnore }: { theme: 'light' | 'dark'; onContinue: () => void; onIgnore: () => void }) => (
   <motion.div 
     initial={{ opacity: 0 }}
@@ -451,8 +488,12 @@ export default function App() {
   const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
   const [lastSaved, setLastSaved] = useState<number>(Date.now());
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const [comingSoonMessage, setComingSoonMessage] = useState<string>("");
+  const [copyStatus, setCopyStatus] = useState<string>("");
   const completionTimeoutRef = useRef<NodeJS.Timeout>();
   const autoSaveRef = useRef<NodeJS.Timeout>();
+  const comingSoonTimeoutRef = useRef<NodeJS.Timeout>();
+  const copyTimeoutRef = useRef<NodeJS.Timeout>();
 
   const handleExplore = () => {
     setIsExploring(true);
@@ -465,6 +506,13 @@ export default function App() {
   useEffect(() => {
     const timer = setTimeout(() => setIsBooting(false), 2000);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (comingSoonTimeoutRef.current) clearTimeout(comingSoonTimeoutRef.current);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -780,6 +828,31 @@ export default function App() {
 
   const toggleTheme = () => {
     setTheme(prev => prev === "dark" ? "light" : "dark");
+  };
+
+  const showComingSoon = (_platform: "Windows" | "macOS") => {
+    setComingSoonMessage("Coming soon.");
+    if (comingSoonTimeoutRef.current) clearTimeout(comingSoonTimeoutRef.current);
+    comingSoonTimeoutRef.current = setTimeout(() => setComingSoonMessage(""), 2200);
+  };
+
+  const copyRepositoryUrl = async () => {
+    if (!cloneUrl.trim()) {
+      setCopyStatus("Enter a repository URL first");
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopyStatus(""), 2000);
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(cloneUrl.trim());
+      setCopyStatus("Repository URL copied");
+    } catch {
+      setCopyStatus("Copy failed. Clipboard access is blocked.");
+    }
+
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setCopyStatus(""), 2000);
   };
 
   const handleCloneRepository = async () => {
@@ -1443,13 +1516,28 @@ ${code}
               </div>
               
               <div className="space-y-4">
-                <input 
-                  type="text"
-                  placeholder="https://github.com/owner/repo"
-                  value={cloneUrl}
-                  onChange={(e) => setCloneUrl(e.target.value)}
-                  className={`w-full px-4 py-3 rounded-xl border ${theme === 'dark' ? 'bg-white/5 border-white/10 text-white placeholder-white/30' : 'bg-black/5 border-black/10 text-black placeholder-black/30'} focus:outline-none focus:border-white/30 transition-colors`}
-                />
+                <div className="space-y-2">
+                  <div className="relative">
+                    <input 
+                      type="text"
+                      placeholder="https://github.com/owner/repo"
+                      value={cloneUrl}
+                      onChange={(e) => setCloneUrl(e.target.value)}
+                      className={`w-full px-4 py-3 pr-28 rounded-xl border ${theme === 'dark' ? 'bg-white/5 border-white/10 text-white placeholder-white/30' : 'bg-black/5 border-black/10 text-black placeholder-black/30'} focus:outline-none focus:border-white/30 transition-colors`}
+                    />
+                    <button
+                      type="button"
+                      onClick={copyRepositoryUrl}
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border flex items-center gap-1.5 ${theme === 'dark' ? 'border-white/15 bg-white/5 text-white/70 hover:text-white' : 'border-black/15 bg-black/5 text-black/70 hover:text-black'} transition-colors`}
+                    >
+                      <Copy className="w-3 h-3" />
+                      Copy
+                    </button>
+                  </div>
+                  {copyStatus && (
+                    <p className={`text-xs ${theme === 'dark' ? 'text-white/50' : 'text-black/50'}`}>{copyStatus}</p>
+                  )}
+                </div>
                 
                 {cloneError && (
                   <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
@@ -1498,6 +1586,7 @@ ${code}
     return (
       <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#050505] text-[#EDEDED]' : 'bg-[#F2F1ED] text-[#1A1A1A]'} font-sans selection:bg-white/20 flex flex-col relative overflow-hidden transition-colors duration-500`}>
         <ThreeDBackground theme={theme} />
+        <LandingScreenshotBackdrop theme={theme} />
         {/* Background Glows */}
         <div className={`absolute top-[-10%] left-[-10%] w-[60%] h-[60%] ${theme === 'dark' ? 'bg-white/[0.02]' : 'bg-black/[0.02]'} blur-[120px] rounded-full pointer-events-none`} />
         <div className={`absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] ${theme === 'dark' ? 'bg-white/[0.02]' : 'bg-black/[0.02]'} blur-[120px] rounded-full pointer-events-none`} />
@@ -1659,6 +1748,26 @@ ${code}
             <span className={`text-[10px] uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-white/20' : 'text-black/20'} font-bold`}>Built with passion in the lab</span>
           </div>
         </footer>
+
+        <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
+          <button
+            onClick={() => showComingSoon("Windows")}
+            className={`px-4 py-2 rounded-full border text-xs font-bold tracking-wide ${theme === 'dark' ? 'bg-black/60 border-white/15 text-white/80 hover:text-white' : 'bg-white/80 border-black/15 text-black/80 hover:text-black'} backdrop-blur-md transition-colors`}
+          >
+            Windows SDK
+          </button>
+          <button
+            onClick={() => showComingSoon("macOS")}
+            className={`px-4 py-2 rounded-full border text-xs font-bold tracking-wide ${theme === 'dark' ? 'bg-black/60 border-white/15 text-white/80 hover:text-white' : 'bg-white/80 border-black/15 text-black/80 hover:text-black'} backdrop-blur-md transition-colors`}
+          >
+            macOS SDK
+          </button>
+          {comingSoonMessage && (
+            <div className={`mt-1 px-4 py-2 rounded-xl text-xs font-medium ${theme === 'dark' ? 'bg-black/80 border border-white/15 text-white/80' : 'bg-white/90 border border-black/10 text-black/80'} backdrop-blur-md`}>
+              {comingSoonMessage}
+            </div>
+          )}
+        </div>
 
         <AnimatePresence>
           {showPrivacy && <PrivacyModal />}

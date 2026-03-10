@@ -12,9 +12,15 @@ type RepoTreeNode = {
 };
 
 const parseGitHubUrl = (repoUrl: string): { owner: string; repo: string; branch?: string } | null => {
+  const trimmed = repoUrl.trim();
+  if (/^[\w.-]+\/[\w.-]+(?:\.git)?$/.test(trimmed)) {
+    const [owner, repoRaw] = trimmed.split("/");
+    return { owner, repo: repoRaw.replace(/\.git$/, "") };
+  }
+
   try {
-    const url = new URL(repoUrl.trim());
-    if (url.hostname !== "github.com") {
+    const url = new URL(trimmed);
+    if (url.hostname !== "github.com" && url.hostname !== "www.github.com") {
       return null;
     }
 
