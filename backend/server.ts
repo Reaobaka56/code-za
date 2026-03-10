@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import cors from "cors";
@@ -6,8 +7,6 @@ import authRoutes from "./routes/auth";
 import executionRoutes from "./routes/execution";
 import completionRoutes from "./routes/completion";
 import githubRoutes from "./routes/github";
-import healthRoutes from "./routes/health";
-import { globalRateLimit, requestMetadata } from "./middleware/apiHardening";
 
 async function startServer() {
   const app = express();
@@ -23,8 +22,7 @@ async function startServer() {
   app.use("/api", executionRoutes);
   app.use("/api/completion", completionRoutes);
   app.use("/api/github", githubRoutes);
-  app.use("/api", healthRoutes);
-
+  
   // OAuth callback route (not under /api)
   app.use("/auth", authRoutes);
 
