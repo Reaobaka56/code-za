@@ -117,6 +117,12 @@ OLLAMA_MODEL=qwen2.5-coder:1.5b
 # Optional tuning
 CODE_ASSISTANT_TIMEOUT_MS=12000
 CODE_ASSISTANT_MAX_SUGGESTIONS=3
+
+# Runtime mode for Python/C++/Java execution:
+# auto   -> try online Piston first, then local fallback
+# online -> force online runtime only
+# local  -> force local SDK/compiler/runtime only
+CODEZA_RUNTIME_MODE=auto
 ```
 
 ### Local LLM Setup (Ollama)
@@ -184,6 +190,23 @@ Some languages may not be available in the web sandbox (C++, Java). For local de
 1. Install the necessary compiler/runtime
 2. Run the development server locally with `npm run dev`
 3. Use Docker for a consistent environment across systems
+
+### Local SDK Setup (Windows)
+
+For local fallback execution, install:
+
+1. Python 3 (`python` / `py -3`)
+2. JDK (`javac` and `java` in PATH)
+3. C++ compiler (`g++` from MinGW-w64 or LLVM toolchain)
+
+Quick checks:
+
+```bash
+py -3 --version
+javac -version
+java -version
+g++ --version
+```
 
 ## Notes
 

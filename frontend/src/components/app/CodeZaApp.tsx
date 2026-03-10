@@ -1880,7 +1880,7 @@ ${code}
         )}
       </AnimatePresence>
       {/* Navigation / Sidebar-style Header */}
-      <nav className={`h-14 border-b ${theme === 'dark' ? 'border-white/10 bg-black/40' : 'border-black/10 bg-[#FAF9F6]/40'} flex items-center justify-between px-4 md:px-8 backdrop-blur-xl sticky top-0 z-50`}>
+      <nav className={`h-14 border-b liquid-glass ${theme === 'dark' ? 'border-white/10 liquid-glass-dark' : 'border-black/10 liquid-glass-light'} flex items-center justify-between px-4 md:px-8 backdrop-blur-xl sticky top-0 z-50`}>
         <div className="flex items-center gap-4 md:gap-6">
           <button 
             onClick={() => setView("landing")}
@@ -1971,7 +1971,7 @@ ${code}
       </nav>
 
       {/* Mobile Language Bar (Scrollable) */}
-      <div className={`md:hidden h-10 border-b ${theme === 'dark' ? 'border-white/5 bg-black/60' : 'border-black/5 bg-[#FAF9F6]/60'} backdrop-blur-md flex items-center px-4 overflow-x-auto no-scrollbar gap-2`}>
+      <div className={`md:hidden h-10 border-b liquid-glass ${theme === 'dark' ? 'border-white/5 liquid-glass-dark' : 'border-black/5 liquid-glass-light'} backdrop-blur-md flex items-center px-4 overflow-x-auto no-scrollbar gap-2`}>
         {LANGUAGES.map((lang) => (
           <button
             key={lang.id}
@@ -2029,7 +2029,7 @@ ${code}
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 260, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              className={`hidden md:flex flex-col border-r ${theme === 'dark' ? 'border-white/10 bg-black/20' : 'border-black/10 bg-black/5'} backdrop-blur-xl overflow-hidden shrink-0`}
+              className={`hidden md:flex flex-col border-r liquid-glass ${theme === 'dark' ? 'border-white/10 liquid-glass-dark' : 'border-black/10 liquid-glass-light'} backdrop-blur-xl overflow-hidden shrink-0`}
             >
               <div className="p-4 flex items-center justify-between border-b border-white/5">
                 <span className={`text-[10px] font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-white/40' : 'text-black/40'}`}>Explorer</span>
@@ -2149,7 +2149,7 @@ ${code}
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className={`absolute bottom-6 right-6 z-40 max-w-sm ${theme === 'dark' ? 'bg-[#0A0A0A] border-white/10' : 'bg-white border-black/10'} border rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden`}
+                  className={`absolute bottom-6 right-6 z-40 max-w-sm liquid-glass ${theme === 'dark' ? 'liquid-glass-dark border-white/10' : 'liquid-glass-light border-black/10'} border rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden`}
                 >
                   <div className={`px-4 py-3 border-b ${theme === 'dark' ? 'border-white/5 bg-white/5' : 'border-black/5 bg-black/5'} flex items-center justify-between`}>
                     <div className="flex items-center gap-2">
@@ -2274,7 +2274,7 @@ ${code}
 
         {/* Output Area */}
         <div className={`${showOutputPanel ? 'flex' : 'hidden'} w-full lg:w-[520px] ${theme === 'dark' ? 'bg-[#050505]' : 'bg-[#FAF9F6]'} flex flex-col border-l ${theme === 'dark' ? 'border-white/10' : 'border-black/10'} absolute inset-0 z-20 lg:relative lg:inset-auto`}>
-          <div className={`h-12 border-b ${theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-black/10 bg-black/5'} flex items-center justify-between px-4 backdrop-blur-xl`}>
+          <div className={`h-12 border-b liquid-glass ${theme === 'dark' ? 'border-white/10 liquid-glass-dark' : 'border-black/10 liquid-glass-light'} flex items-center justify-between px-4 backdrop-blur-xl`}>
             <div className="flex items-center gap-1">
               <button 
                 onClick={() => setActiveTab("output")}
@@ -2479,7 +2479,7 @@ ${code}
                           </li>
                           <li className="flex gap-2">
                             <span className="text-indigo-400">•</span>
-                            <span>Run <code className="text-indigo-400">python3 main.py</code> to execute Python scripts.</span>
+                            <span>Run <code className="text-indigo-400">python main.py</code> (or <code className="text-indigo-400">py -3 main.py</code> on Windows) to execute Python scripts.</span>
                           </li>
                           <li className="flex gap-2">
                             <span className="text-indigo-400">•</span>
@@ -2517,7 +2517,7 @@ ${code}
           </div>
 
           {/* Minimal Footer Stats */}
-          <div className={`p-6 border-t ${theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-black/10 bg-black/5'} flex items-center justify-between backdrop-blur-xl`}>
+          <div className={`p-6 border-t liquid-glass ${theme === 'dark' ? 'border-white/10 liquid-glass-dark' : 'border-black/10 liquid-glass-light'} flex items-center justify-between backdrop-blur-xl`}>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -2540,10 +2540,10 @@ ${code}
           whileHover={{ x: -2, scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           onClick={() => summonCodeZaAssistant("manual")}
-          className={`fixed right-3 top-1/2 -translate-y-1/2 z-30 rounded-2xl px-3 py-4 border shadow-2xl backdrop-blur-xl ${
+          className={`fixed right-3 top-1/2 -translate-y-1/2 z-30 rounded-2xl px-3 py-4 border shadow-2xl backdrop-blur-xl liquid-glass ${
             theme === 'dark'
-              ? 'bg-[#0A0A0A]/95 border-white/15 text-white'
-              : 'bg-white/95 border-black/10 text-black'
+              ? 'liquid-glass-dark text-white'
+              : 'liquid-glass-light text-black'
           }`}
           title="Open code-za AI assistant"
         >
@@ -2551,9 +2551,11 @@ ${code}
             <motion.div
               animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-              className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center"
+              className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center border ${
+                theme === 'dark' ? 'border-white/20 bg-white/10' : 'border-black/20 bg-black/5'
+              }`}
             >
-              <Zap className="w-4 h-4" />
+              <img src="/favicon.svg" alt="code-za" className="w-5 h-5" />
             </motion.div>
             <span className="text-[9px] font-black tracking-[0.24em] [writing-mode:vertical-rl] rotate-180">
               CODE-ZA
@@ -2569,15 +2571,17 @@ ${code}
             initial={{ opacity: 0, x: 24, scale: 0.96 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 24, scale: 0.96 }}
-            className={`fixed right-20 top-1/2 -translate-y-1/2 z-30 max-w-[260px] rounded-2xl border p-4 shadow-2xl backdrop-blur-xl ${
+            className={`fixed right-20 top-1/2 -translate-y-1/2 z-30 max-w-[260px] rounded-2xl border p-4 shadow-2xl backdrop-blur-xl liquid-glass ${
               theme === 'dark'
-                ? 'bg-[#0A0A0A]/95 border-white/15 text-white'
-                : 'bg-white/95 border-black/10 text-black'
+                ? 'liquid-glass-dark text-white'
+                : 'liquid-glass-light text-black'
             }`}
           >
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center shrink-0">
-                <Zap className="w-4 h-4" />
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
+                theme === 'dark' ? 'bg-white/10 border-white/20' : 'bg-black/5 border-black/15'
+              }`}>
+                <img src="/favicon.svg" alt="code-za" className="w-5 h-5" />
               </div>
               <div className="space-y-2">
                 <p className="text-[11px] font-bold uppercase tracking-widest">code-za assistant</p>

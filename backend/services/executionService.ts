@@ -19,6 +19,8 @@ type PistonRuntime = {
 const PISTON_BASE_URL = (process.env.PISTON_BASE_URL || "https://emkc.org/api/v2/piston").replace(/\/+$/, "");
 const onlineLanguages = new Set(["python", "cpp", "java"]);
 const runtimeCache = new Map<string, { language: string; version: string }>();
+const runtimeMode = (process.env.CODEZA_RUNTIME_MODE || "auto").toLowerCase(); // auto | online | local
+const isWindows = process.platform === "win32";
 
 const runtimeHints: Record<string, string[]> = {
   python: ["python", "py"],
@@ -124,11 +126,11 @@ const runCodeLocally = async (language: string, code: string): Promise<Execution
     case "cpp":
       fileName = "solution.cpp";
       compileCmd = `g++ ${fileName} -o solution`;
-      runCmd = "./solution";
+      runCmd = isWindows ? "solution.exe" : "./solution";
       break;
     case "python":
       fileName = "solution.py";
-      runCmd = `python3 ${fileName}`;
+      runCmd = isWindows ? `py -3 ${fileName}` : `python3 ${fileName}`;
       break;
     case "java": {
       const classMatch = code.match(/public\s+class\s+(\w+)/);
@@ -171,15 +173,18 @@ const runCodeLocally = async (language: string, code: string): Promise<Execution
 
         if (error) {
           let errorMessage = stderr || error.message;
-          if (errorMessage.includes("not found")) {
+          if (
+            errorMessage.includes("not found") ||
+            errorMessage.includes("is not recognized as an internal or external command")
+          ) {
             let cmd = "compiler/runtime";
             if (errorMessage.includes("g++")) cmd = "g++ (C++)";
             else if (errorMessage.includes("javac")) cmd = "javac (Java)";
             else if (errorMessage.includes("java")) cmd = "java (Java)";
-            else if (errorMessage.includes("python3")) cmd = "python3 (Python)";
+            else if (errorMessage.includes("python3") || errorMessage.includes("py -3") || errorMessage.includes("python")) cmd = "python (Python)";
             else if (errorMessage.includes("node")) cmd = "node (JavaScript)";
 
-            errorMessage = `Error: The ${language} ${cmd} is not installed in this environment.`;
+            errorMessage = `Error: The ${language} ${cmd} is not installed in this environment.\nInstall the runtime locally or set CODEZA_RUNTIME_MODE=online.`;
           }
 
           resolve({
@@ -200,15 +205,32 @@ const runCodeLocally = async (language: string, code: string): Promise<Execution
 };
 
 export const runCode = async (language: string, code: string): Promise<ExecutionResult> => {
-  if (onlineLanguages.has(language)) {
+  if (onlineLanguages.has(language) && runtimeMode !== "local") {
     try {
       return await runCodeOnline(language, code);
     } catch (error: any) {
-      return {
-        output: "",
-        error: `Online ${language.toUpperCase()} runtime is currently unavailable. ${error?.message ?? ""}`.trim(),
-        duration: 0,
-      };
+      if (runtimeMode === "online") {
+        return {
+          output: "",
+          error: `Online ${language.toUpperCase()} runtime is currently unavailable. ${error?.message ?? ""}`.trim(),
+          duration: 0,
+        };
+      }
+
+      // auto mode fallback to local runtime
+      try {
+        const local = await runCodeLocally(language, code);
+        if (local.error) {
+          local.error = `Online runtime failed: ${error?.message ?? "unknown"}\n\nLocal runtime error:\n${local.error}`;
+        }
+        return local;
+      } catch (localError: any) {
+        return {
+          output: "",
+          error: `Online ${language.toUpperCase()} runtime unavailable (${error?.message ?? "unknown"}). Local fallback also failed (${localError?.message ?? "unknown"}).`,
+          duration: 0,
+        };
+      }
     }
   }
 
