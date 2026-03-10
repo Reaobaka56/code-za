@@ -129,6 +129,16 @@ const LANGUAGES: { id: Language; name: string }[] = [
   { id: "react", name: "React" },
 ];
 
+const detectLanguageFromFilename = (name: string): Language => {
+  const ext = name.split(".").pop()?.toLowerCase();
+  if (ext === "py") return "python";
+  if (ext === "cpp" || ext === "cc" || ext === "cxx" || ext === "hpp") return "cpp";
+  if (ext === "java") return "java";
+  if (ext === "html" || ext === "htm") return "html";
+  if (ext === "jsx" || ext === "tsx") return "react";
+  return "javascript";
+};
+
 const Logo = ({ className = "w-8 h-8", theme }: { className?: string; theme: 'light' | 'dark' }) => (
   <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="50" cy="50" r="42" stroke={theme === 'dark' ? 'white' : 'black'} strokeWidth="8" />
@@ -632,13 +642,7 @@ export default function App() {
     const name = prompt("File name (e.g. index.js, script.py):");
     if (!name) return;
     const id = Math.random().toString(36).substr(2, 9);
-    const ext = name.split('.').pop();
-    let lang: Language = 'javascript';
-    if (ext === 'py') lang = 'python';
-    if (ext === 'cpp') lang = 'cpp';
-    if (ext === 'java') lang = 'java';
-    if (ext === 'html') lang = 'html';
-    if (ext === 'jsx' || ext === 'tsx') lang = 'react';
+    const lang = detectLanguageFromFilename(name);
 
     const newFile: FileNode = {
       id,
@@ -699,7 +703,7 @@ export default function App() {
     setIsSwitchingFile(true);
     setTimeout(() => {
       setActiveFileId(file.id);
-      if (file.language) setLanguage(file.language);
+      setLanguage(file.language || detectLanguageFromFilename(file.name));
       setCode(file.content || '');
       setIsSwitchingFile(false);
     }, 150);
@@ -803,6 +807,7 @@ export default function App() {
               type: it.type,
               parentId,
               content: it.content,
+              language: it.type === 'file' ? detectLanguageFromFilename(it.name) : undefined,
             };
             if (it.type === 'folder' && it.children) {
               return [node, ...flatten(it.children, it.id)];
@@ -937,7 +942,7 @@ export default function App() {
         setShowCompletions(false);
       }
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error || err.message || 'Failed to get suggestions. Check if GEMINI_API_KEY is set.';
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to get suggestions.';
       setCompletionError(errorMsg);
       console.error('Completion error:', err);
       setShowCompletions(false);
@@ -1502,7 +1507,7 @@ ${code}
         <div className={`absolute top-[-10%] left-[-10%] w-[60%] h-[60%] ${theme === 'dark' ? 'bg-white/[0.02]' : 'bg-black/[0.02]'} blur-[120px] rounded-full pointer-events-none`} />
         <div className={`absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] ${theme === 'dark' ? 'bg-white/[0.02]' : 'bg-black/[0.02]'} blur-[120px] rounded-full pointer-events-none`} />
 
-        <nav className={`h-20 flex items-center justify-between px-6 md:px-12 border-b ${theme === 'dark' ? 'border-white/10 bg-black/20' : 'border-black/10 bg-[#FAF9F6]/20'} backdrop-blur-md sticky top-0 z-50`}>
+        <nav className={`h-20 flex items-center justify-between px-6 md:px-12 border-b liquid-glass ${theme === 'dark' ? 'liquid-glass-dark border-white/10' : 'liquid-glass-light border-black/10'} sticky top-0 z-50`}>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Logo theme={theme} className="w-8 h-8" />
@@ -1707,7 +1712,7 @@ ${code}
         )}
       </AnimatePresence>
       {/* Navigation / Sidebar-style Header */}
-      <nav className={`h-14 border-b ${theme === 'dark' ? 'border-white/10 bg-black/40' : 'border-black/10 bg-[#FAF9F6]/40'} flex items-center justify-between px-4 md:px-8 backdrop-blur-xl sticky top-0 z-50`}>
+      <nav className={`h-14 border-b liquid-glass ${theme === 'dark' ? 'liquid-glass-dark border-white/10' : 'liquid-glass-light border-black/10'} flex items-center justify-between px-4 md:px-8 sticky top-0 z-50`}>
         <div className="flex items-center gap-4 md:gap-6">
           <button 
             onClick={() => setView("landing")}
@@ -1918,7 +1923,7 @@ ${code}
         </AnimatePresence>
 
         {/* Editor Area */}
-        <div className={`flex-1 ${theme === 'dark' ? 'bg-[#050505]' : 'bg-[#FAF9F6]'} relative border-r ${theme === 'dark' ? 'border-white/10' : 'border-black/10'} ${showOutputPanel ? 'hidden lg:block' : 'block'}`}>
+        <div className={`flex-1 ${theme === 'dark' ? 'bg-[#050505]' : 'bg-[#FAF9F6]'} liquid-glass ${theme === 'dark' ? 'liquid-glass-dark' : 'liquid-glass-light'} relative border-r ${theme === 'dark' ? 'border-white/10' : 'border-black/10'} ${showOutputPanel ? 'hidden lg:block' : 'block'}`}>
           <AnimatePresence>
             {isSwitchingFile && (
               <motion.div 
@@ -2015,7 +2020,7 @@ ${code}
                   {completionError ? (
                     <div className={`p-4 ${theme === 'dark' ? 'bg-red-500/10 text-red-400' : 'bg-red-500/10 text-red-600'}`}>
                       <p className="text-xs">{completionError}</p>
-                      <p className="text-[10px] mt-2 opacity-60">Make sure GEMINI_API_KEY is set in environment variables.</p>
+                      <p className="text-[10px] mt-2 opacity-60">Check backend completion service configuration.</p>
                     </div>
                   ) : (
                     <div className={`${theme === 'dark' ? 'divide-white/5' : 'divide-black/5'} divide-y max-h-64 overflow-auto`}>
@@ -2244,7 +2249,7 @@ ${code}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="h-full relative flex flex-col"
+                  className="h-full relative flex flex-col liquid-glass liquid-glass-light"
                 >
                   {/* Loading State */}
                   {!code && (
@@ -2296,7 +2301,7 @@ ${code}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className={`p-6 h-full flex flex-col ${theme === 'dark' ? 'bg-black' : 'bg-[#F5F5F5]'}`}
+                  className={`p-6 h-full flex flex-col liquid-glass ${theme === 'dark' ? 'liquid-glass-dark bg-black/60' : 'liquid-glass-light bg-white/60'}`}
                 >
                   <div className="flex-1 overflow-auto space-y-4 mb-4 no-scrollbar">
                     <div className="flex items-center justify-between mb-6">
