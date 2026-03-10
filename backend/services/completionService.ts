@@ -70,5 +70,5 @@ export const explainCode = async (code: string, language: string): Promise<strin
   const lineCount = code.split("\n").length;
   const languageLabel = language.charAt(0).toUpperCase() + language.slice(1);
 
-  return `${languageLabel} snippet with ${lineCount} line(s). This environment is currently using a lightweight local explainer.`;
+  return `${languageLabel} snippet with ${lineCount} line(s). This environment is currently using a lightweight local explainer; add an AI provider key to upgrade detailed explanations.`;
 };
