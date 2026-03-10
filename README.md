@@ -11,7 +11,6 @@ A minimal, high-performance multi-language code runner built by students for stu
 - ** Lightning Fast**: Optimized for speed with zero setup time
 - ** GitHub Integration**: Clone repositories directly into the editor
 - ** Version History**: Save and revert code snapshots
-- ** AI Code Completions**: Intelligent suggestions for ALL languages powered by Google Gemini
 - ** Auto-Save**: Automatic saving to browser storage every 3 seconds
 - ** Keyboard Shortcuts**: Complete keyboard navigation support
 - ** Responsive Design**: Works flawlessly on desktop, tablet, and mobile
@@ -183,6 +182,7 @@ Some languages may not be available in the web sandbox (C++, Java). For local de
 ## License
 
 MIT
+
 
 
 
