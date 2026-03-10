@@ -19,7 +19,7 @@ async function startServer() {
   app.use("/api", executionRoutes);
   app.use("/api/completion", completionRoutes);
   app.use("/api/github", githubRoutes);
-  
+
   // OAuth callback route (not under /api)
   app.use("/auth", authRoutes);
 
@@ -38,10 +38,10 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log("Server running on http://localhost:" + PORT);
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 
-startServer().catch(err => {
+startServer().catch((err) => {
   console.error("Failed to start server:", err);
 });
