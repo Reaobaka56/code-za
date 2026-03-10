@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+ï»¿import React, { useState, useEffect, useRef } from "react";
 import Editor from "@monaco-editor/react";
 import SimpleEditor from "react-simple-code-editor";
 import { highlight, languages } from "prismjs";
@@ -488,6 +488,8 @@ export default function App() {
   const [isLoadingCompletions, setIsLoadingCompletions] = useState(false);
   const [completionError, setCompletionError] = useState<string>("");
   const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
+  const [showCodeZaAssistPrompt, setShowCodeZaAssistPrompt] = useState(false);
+  const [assistHint, setAssistHint] = useState("Need a boost?");
   const [lastSaved, setLastSaved] = useState<number>(Date.now());
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const [comingSoonMessage, setComingSoonMessage] = useState<string>("");
@@ -496,6 +498,9 @@ export default function App() {
   const autoSaveRef = useRef<NodeJS.Timeout>();
   const comingSoonTimeoutRef = useRef<NodeJS.Timeout>();
   const copyTimeoutRef = useRef<NodeJS.Timeout>();
+  const assistPromptTimeoutRef = useRef<NodeJS.Timeout>();
+  const lastCodeEditAtRef = useRef<number>(Date.now());
+  const lastAssistPromptAtRef = useRef<number>(0);
 
   const handleExplore = () => {
     setIsExploring(true);
@@ -514,6 +519,7 @@ export default function App() {
     return () => {
       if (comingSoonTimeoutRef.current) clearTimeout(comingSoonTimeoutRef.current);
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      if (assistPromptTimeoutRef.current) clearTimeout(assistPromptTimeoutRef.current);
     };
   }, []);
 
@@ -756,14 +762,70 @@ export default function App() {
   };
 
   const handleCodeChange = (newCode: string) => {
+    lastCodeEditAtRef.current = Date.now();
     setCode(newCode);
     setFiles(prev => prev.map(f => f.id === activeFileId ? { ...f, content: newCode } : f));
+    setShowCodeZaAssistPrompt(false);
     
     // Trigger completion suggestions for all languages except when in output/terminal tab
     if (newCode && activeTab !== "terminal") {
       debouncedFetchCompletions(newCode);
     }
   };
+
+  const scheduleAssistPromptHide = () => {
+    if (assistPromptTimeoutRef.current) {
+      clearTimeout(assistPromptTimeoutRef.current);
+    }
+    assistPromptTimeoutRef.current = setTimeout(() => {
+      setShowCodeZaAssistPrompt(false);
+    }, 5000);
+  };
+
+  const summonCodeZaAssistant = (reason: "manual" | "idle" | "error" = "manual") => {
+    if (reason === "error") {
+      setAssistHint("I saw an error. Let me auto-predict the fix.");
+    } else if (reason === "idle") {
+      setAssistHint("You paused for a bit. Want a next-line prediction?");
+    } else {
+      setAssistHint("code-za AI is ready to auto-predict your next block.");
+    }
+
+    setShowCodeZaAssistPrompt(true);
+    scheduleAssistPromptHide();
+
+    if (code && code.trim().length >= 3 && activeTab !== "terminal" && !isLoadingCompletions) {
+      fetchCompletions(code);
+    }
+
+    lastAssistPromptAtRef.current = Date.now();
+  };
+
+  useEffect(() => {
+    if (view !== "playground") return;
+
+    const timer = setInterval(() => {
+      if (activeTab === "terminal" || isRunning) return;
+
+      const now = Date.now();
+      const idleMs = now - lastCodeEditAtRef.current;
+      const cooldownMs = now - lastAssistPromptAtRef.current;
+      const hasEnoughCode = code.trim().length >= 3;
+
+      if (cooldownMs < 18000) return;
+
+      if (error && error.trim().length > 0) {
+        summonCodeZaAssistant("error");
+        return;
+      }
+
+      if (hasEnoughCode && idleMs > 22000 && !showCompletions && !isLoadingCompletions) {
+        summonCodeZaAssistant("idle");
+      }
+    }, 4000);
+
+    return () => clearInterval(timer);
+  }, [view, activeTab, isRunning, error, code, showCompletions, isLoadingCompletions]);
 
   const FileTree = ({ parentId = null, level = 0 }: { parentId?: string | null, level?: number }) => {
     const children = files.filter(f => f.parentId === parentId).sort((a, b) => {
@@ -1743,7 +1805,7 @@ ${code}
         <footer className={`py-20 px-12 flex flex-col md:flex-row items-center justify-between gap-8 ${theme === 'dark' ? 'bg-black/20' : 'bg-[#FAF9F6]/20'} backdrop-blur-sm`}>
           <div className="flex items-center gap-4">
             <Logo theme={theme} className="w-6 h-6" />
-            <span className={`text-[10px] uppercase tracking-[0.3em] ${theme === 'dark' ? 'text-white/20' : 'text-black/20'} font-bold`}>© 2024</span>
+            <span className={`text-[10px] uppercase tracking-[0.3em] ${theme === 'dark' ? 'text-white/20' : 'text-black/20'} font-bold`}>Â© 2024</span>
           </div>
           <div className="flex items-center gap-12">
             <button onClick={() => setShowPrivacy(true)} className={`text-[10px] uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-white/40 hover:text-white' : 'text-black/40 hover:text-black'} font-bold transition-colors`}>Privacy Policy</button>
@@ -2151,7 +2213,7 @@ ${code}
                   {!completionError && (
                     <div className={`px-4 py-2 border-t ${theme === 'dark' ? 'border-white/5 bg-white/5 text-white/40' : 'border-black/5 bg-black/5 text-black/40'} text-[10px] flex items-center justify-between`}>
                       <span>AI Powered</span>
-                      <span>?? Navigate • ?+G Retry</span>
+                      <span>?? Navigate â€¢ ?+G Retry</span>
                     </div>
                   )}
                 </motion.div>
@@ -2412,15 +2474,15 @@ ${code}
                         </p>
                         <ul className="space-y-2 text-[10px] leading-relaxed">
                           <li className="flex gap-2">
-                            <span className="text-indigo-400">•</span>
+                            <span className="text-indigo-400">â€¢</span>
                             <span>Use <code className="text-indigo-400">ls</code> to list files in your current directory.</span>
                           </li>
                           <li className="flex gap-2">
-                            <span className="text-indigo-400">•</span>
+                            <span className="text-indigo-400">â€¢</span>
                             <span>Run <code className="text-indigo-400">python3 main.py</code> to execute Python scripts.</span>
                           </li>
                           <li className="flex gap-2">
-                            <span className="text-indigo-400">•</span>
+                            <span className="text-indigo-400">â€¢</span>
                             <span>If <code className="text-indigo-400">npm install</code> fails with a 404, check your package name.</span>
                           </li>
                         </ul>
@@ -2469,6 +2531,80 @@ ${code}
           </div>
         </div>
       </main>
+
+      <AnimatePresence>
+        <motion.button
+          initial={{ x: 80, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: 80, opacity: 0 }}
+          whileHover={{ x: -2, scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => summonCodeZaAssistant("manual")}
+          className={`fixed right-3 top-1/2 -translate-y-1/2 z-30 rounded-2xl px-3 py-4 border shadow-2xl backdrop-blur-xl ${
+            theme === 'dark'
+              ? 'bg-[#0A0A0A]/95 border-white/15 text-white'
+              : 'bg-white/95 border-black/10 text-black'
+          }`}
+          title="Open code-za AI assistant"
+        >
+          <div className="flex flex-col items-center gap-2">
+            <motion.div
+              animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center"
+            >
+              <Zap className="w-4 h-4" />
+            </motion.div>
+            <span className="text-[9px] font-black tracking-[0.24em] [writing-mode:vertical-rl] rotate-180">
+              CODE-ZA
+            </span>
+            <span className={`text-[8px] font-bold tracking-wider ${theme === 'dark' ? 'text-white/50' : 'text-black/50'}`}>
+              AI
+            </span>
+          </div>
+        </motion.button>
+
+        {showCodeZaAssistPrompt && (
+          <motion.div
+            initial={{ opacity: 0, x: 24, scale: 0.96 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 24, scale: 0.96 }}
+            className={`fixed right-20 top-1/2 -translate-y-1/2 z-30 max-w-[260px] rounded-2xl border p-4 shadow-2xl backdrop-blur-xl ${
+              theme === 'dark'
+                ? 'bg-[#0A0A0A]/95 border-white/15 text-white'
+                : 'bg-white/95 border-black/10 text-black'
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center shrink-0">
+                <Zap className="w-4 h-4" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold uppercase tracking-widest">code-za assistant</p>
+                <p className={`${theme === 'dark' ? 'text-white/70' : 'text-black/70'} text-xs leading-relaxed`}>
+                  {assistHint}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => summonCodeZaAssistant("manual")}
+                    className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-indigo-500 text-white hover:bg-indigo-400 transition-colors"
+                  >
+                    Auto predict
+                  </button>
+                  <button
+                    onClick={() => setShowCodeZaAssistPrompt(false)}
+                    className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest ${
+                      theme === 'dark' ? 'bg-white/5 text-white/60 hover:text-white' : 'bg-black/5 text-black/60 hover:text-black'
+                    } transition-colors`}
+                  >
+                    Hide
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showPrivacy && <PrivacyModal />}
@@ -2537,3 +2673,4 @@ ${code}
     </div>
   );
 }
+
