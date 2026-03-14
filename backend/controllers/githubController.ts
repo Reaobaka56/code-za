@@ -12,9 +12,15 @@ type RepoTreeNode = {
 };
 
 const parseGitHubUrl = (repoUrl: string): { owner: string; repo: string; branch?: string } | null => {
+  const trimmed = repoUrl.trim();
+  if (/^[\w.-]+\/[\w.-]+(?:\.git)?$/.test(trimmed)) {
+    const [owner, repoRaw] = trimmed.split("/");
+    return { owner, repo: repoRaw.replace(/\.git$/, "") };
+  }
+
   try {
-    const url = new URL(repoUrl.trim());
-    if (url.hostname !== "github.com") {
+    const url = new URL(trimmed);
+    if (url.hostname !== "github.com" && url.hostname !== "www.github.com") {
       return null;
     }
 
@@ -121,10 +127,6 @@ export const cloneRepository = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Repository URL is required." });
     }
 
-    if (repoUrl.length > 500) {
-      return res.status(413).json({ error: "Repository URL is too long." });
-    }
-
     const parsed = parseGitHubUrl(repoUrl);
     if (!parsed) {
       return res.status(400).json({ error: "Invalid GitHub repository URL." });
@@ -157,22 +159,16 @@ export const cloneRepository = async (req: Request, res: Response) => {
       return res.status(502).json({ error: "Unable to download repository archive from GitHub." });
     }
 
-    if (zipBuffer.byteLength > 30 * 1024 * 1024) {
-      return res.status(413).json({ error: "Repository archive too large (max 30MB)." });
-    }
-
     const zip = await JSZip.loadAsync(zipBuffer);
     const files: Array<{ path: string; content: string }> = [];
-    const MAX_FILES = 1500;
 
     await Promise.all(
       Object.values(zip.files).map(async (file) => {
         if (file.dir) return;
         const relative = file.name.split("/").slice(1).join("/");
         if (!relative || !isTextFile(relative)) return;
-        if (files.length >= MAX_FILES) return;
         const content = await file.async("string");
-        files.push({ path: relative, content: content.slice(0, 300_000) });
+        files.push({ path: relative, content });
       })
     );
 
