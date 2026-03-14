@@ -10,7 +10,10 @@ import githubRoutes from "./routes/github";
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT || 3000);
+
+  app.disable("x-powered-by");
+  app.set("trust proxy", 1);
 
   app.use(cors());
   app.use(requestMetadata);
@@ -35,7 +38,7 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     app.use(express.static("dist"));
-    app.get("*", (req, res) => {
+    app.get("*", (_req, res) => {
       res.sendFile(path.resolve("dist/index.html"));
     });
   }
@@ -43,6 +46,19 @@ async function startServer() {
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+
+  const server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+
+  const shutdown = (signal: string) => {
+    console.log(`Received ${signal}. Shutting down gracefully...`);
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(1), 10_000).unref();
+  };
+
+  process.on("SIGINT", () => shutdown("SIGINT"));
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
 }
 
 startServer().catch((err) => {
