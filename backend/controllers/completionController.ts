@@ -8,6 +8,10 @@ export const getCompletions = async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Code and language are required" });
   }
 
+  if (typeof code !== "string" || code.length > 50_000) {
+    return res.status(413).json({ error: "Code payload too large for completions." });
+  }
+
   try {
     const result = await completionService.getCodeCompletions({ code, language });
     res.json(result);
@@ -21,6 +25,10 @@ export const explainCode = async (req: Request, res: Response) => {
 
   if (!code || !language) {
     return res.status(400).json({ error: "Code and language are required" });
+  }
+
+  if (typeof code !== "string" || code.length > 50_000) {
+    return res.status(413).json({ error: "Code payload too large for explanation." });
   }
 
   try {

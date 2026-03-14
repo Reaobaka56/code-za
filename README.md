@@ -121,12 +121,25 @@ Supported repository types:
 Build and run with Docker:
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 The application will be available at `http://localhost:3000`
 
+The container runs the API with `npm start` in production mode and serves health checks at `GET /api/health`.
 
+### Render
+
+This project is ready for Render using the included Dockerfile.
+
+1. Push this repository to GitHub.
+2. In Render, create a **Web Service** from the repo.
+3. Render will auto-detect `render.yaml` and deploy as a **Docker** web service.
+4. Add required environment variables in Render dashboard:
+   - `NODE_ENV=production`
+   - any optional integration keys (`BETTER_AUTH_*`, `GITHUB_*`).
+
+Health check endpoint: `GET /api/health` (already configured in `render.yaml`).
 
 ## Troubleshooting
 
