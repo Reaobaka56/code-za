@@ -11,7 +11,6 @@ A minimal, high-performance multi-language code runner built by students for stu
 - ** Lightning Fast**: Optimized for speed with zero setup time
 - ** GitHub Integration**: Clone repositories directly into the editor
 - ** Version History**: Save and revert code snapshots
-- ** AI Code Completions**: Intelligent suggestions for ALL languages powered by Google Gemini
 - ** Auto-Save**: Automatic saving to browser storage every 3 seconds
 - ** Keyboard Shortcuts**: Complete keyboard navigation support
 - ** Responsive Design**: Works flawlessly on desktop, tablet, and mobile
@@ -69,6 +68,18 @@ code-za includes intelligent AI-powered code completion for **ALL supported lang
    - Escape to close panel
    - Click any suggestion to insert it
 
+### Chat Mode + File Upload
+
+The side `code-za AI` badge now supports:
+
+1. `Auto Predict` mode for inline code suggestions
+2. `Chat Mode` for asking questions about your code
+3. File upload in chat mode (files are sent as text context to the backend AI endpoint)
+
+Limits:
+- Up to 8 files per chat session
+- Large files are truncated before sending
+
 ### Keyboard Shortcuts
 
 | Shortcut | Action |
@@ -102,6 +113,51 @@ Supported repository types:
 
 ### Environment Variables
 
+Create a `.env` file in the project root for backend settings.
+
+```bash
+# Code assistant provider: "ollama" (local LLM) or "mock" (template fallback)
+CODE_ASSISTANT_PROVIDER=ollama
+
+# Keep fallback templates enabled if the model is unavailable
+CODE_ASSISTANT_FALLBACK=true
+
+# Local Ollama configuration
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=qwen2.5-coder:1.5b
+
+# Optional tuning
+CODE_ASSISTANT_TIMEOUT_MS=12000
+CODE_ASSISTANT_MAX_SUGGESTIONS=3
+
+# Runtime mode for Python/C++/Java execution:
+# auto   -> try online Piston first, then local fallback
+# online -> force online runtime only
+# local  -> force local SDK/compiler/runtime only
+CODEZA_RUNTIME_MODE=auto
+```
+
+### Local LLM Setup (Ollama)
+
+1. Install Ollama from `https://ollama.com`.
+2. Pull a small coding model:
+
+```bash
+ollama pull qwen2.5-coder:1.5b
+```
+
+3. Start Ollama (if not already running):
+
+```bash
+ollama serve
+```
+
+4. Start this app:
+
+```bash
+npm run dev
+```
+
 
 
 # DevOps
@@ -121,25 +177,12 @@ Supported repository types:
 Build and run with Docker:
 
 ```bash
-docker compose up --build
+docker-compose up --build
 ```
 
 The application will be available at `http://localhost:3000`
 
-The container runs the API with `npm start` in production mode and serves health checks at `GET /api/health`.
 
-### Render
-
-This project is ready for Render using the included Dockerfile.
-
-1. Push this repository to GitHub.
-2. In Render, create a **Web Service** from the repo.
-3. Render will auto-detect `render.yaml` and deploy as a **Docker** web service.
-4. Add required environment variables in Render dashboard:
-   - `NODE_ENV=production`
-   - any optional integration keys (`BETTER_AUTH_*`, `GITHUB_*`).
-
-Health check endpoint: `GET /api/health` (already configured in `render.yaml`).
 
 ## Troubleshooting
 
@@ -159,6 +202,23 @@ Some languages may not be available in the web sandbox (C++, Java). For local de
 1. Install the necessary compiler/runtime
 2. Run the development server locally with `npm run dev`
 3. Use Docker for a consistent environment across systems
+
+### Local SDK Setup (Windows)
+
+For local fallback execution, install:
+
+1. Python 3 (`python` / `py -3`)
+2. JDK (`javac` and `java` in PATH)
+3. C++ compiler (`g++` from MinGW-w64 or LLVM toolchain)
+
+Quick checks:
+
+```bash
+py -3 --version
+javac -version
+java -version
+g++ --version
+```
 
 ## Notes
 
@@ -196,6 +256,7 @@ Some languages may not be available in the web sandbox (C++, Java). For local de
 ## License
 
 MIT
+
 
 
 

@@ -1,15 +1,16 @@
 services:
   - type: web
     name: code-za
-    env: docker
+    env: node
     plan: starter
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
     autoDeploy: true
-    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 3000
       - key: BETTER_AUTH_URL
         sync: false
       - key: BETTER_AUTH_SECRET
